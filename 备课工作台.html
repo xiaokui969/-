@@ -1,0 +1,1058 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>心理课堂备课工作台</title>
+<link rel="icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23272D2A'/%3E%3Cpath d='M6 19c3.4-1 4.6 2 8 1s4.6-3.4 8-2.6' stroke='%23EE8E79' stroke-width='1.8' fill='none'/%3E%3Cpath d='M6 24c3.4-1 4.6 2 8 1s4.6-3.4 8-2.6' stroke='%237FBCA8' stroke-width='1.8' fill='none'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://miaoda.feishu.cn">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600&display=swap">
+<style>
+:root{
+  --paper:#F7F5F0;
+  --paper-2:#EFECE3;
+  --panel:#FFFDF7;
+  --ink:#272D2A;
+  --ink-2:#59605C;
+  --ink-3:#8B928C;
+  --line:rgba(39,45,42,.13);
+  --line-soft:rgba(39,45,42,.07);
+  --accent:#EE8E79;
+  --accent-tint:#FFFDF7;
+  --accent-soft:#F8E4DD;
+  --accent-ink:#8E4433;
+  --serif:"Noto Serif SC","Songti SC",Georgia,"Times New Roman",serif;
+  --sans:"Noto Sans SC","PingFang SC","Hiragino Sans GB",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-size:15px;line-height:1.8;
+  -webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='n' opacity='.055'/%3E%3C/svg%3E");
+}
+:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2px}
+
+/* ===== 顶栏 ===== */
+.topbar{
+  position:sticky;top:0;z-index:30;
+  background:rgba(247,245,240,.9);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.topbar-inner{
+  max-width:1320px;margin:0 auto;height:62px;padding:0 26px;
+  display:flex;align-items:center;justify-content:space-between;gap:18px;
+}
+.brand{display:flex;align-items:center;gap:11px;min-width:0}
+.brand-mark{
+  width:30px;height:30px;flex:0 0 auto;border-radius:8px;background:#272D2A;
+  display:grid;place-items:center;
+}
+.brand-mark svg{width:18px;height:18px;display:block}
+.brand-name{font-family:var(--serif);font-size:15.5px;font-weight:600;margin:0;letter-spacing:.02em;line-height:1.4}
+.brand-sub{margin:1px 0 0;font-size:11.5px;color:var(--ink-3);letter-spacing:.04em;line-height:1.4}
+.topbar-actions{display:flex;align-items:center;gap:8px}
+.save-state{font-size:12px;color:var(--ink-3);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.save-dot{width:6px;height:6px;border-radius:50%;background:#7FBCA8;display:inline-block;transition:background .3s}
+.save-state.is-dirty .save-dot{background:var(--accent)}
+.btn{
+  font-family:var(--sans);font-size:12.5px;padding:7px 13px;border-radius:6px;
+  border:1px solid var(--line);background:var(--panel);color:var(--ink-2);
+  cursor:pointer;transition:.15s ease;white-space:nowrap;
+}
+.btn:hover{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-soft)}
+.btn.primary{background:#272D2A;border-color:#272D2A;color:#F7F5F0}
+.btn.primary:hover{background:var(--accent-ink);border-color:var(--accent-ink);color:#FFFDF7}
+
+/* ===== 布局 ===== */
+.layout{display:grid;grid-template-columns:238px minmax(0,1fr);max-width:1320px;margin:0 auto;position:relative;z-index:1}
+.rail{
+  position:sticky;top:62px;height:calc(100vh - 62px);overflow-y:auto;overflow-x:hidden;
+  border-right:1px solid var(--line);padding:24px 0 26px;min-width:0;
+}
+.rail-label{
+  font-size:11.5px;color:var(--ink-3);letter-spacing:.14em;margin:0 0 10px;padding:0 24px;
+}
+.theme-nav{display:flex;flex-direction:column}
+.nav-item{
+  appearance:none;border:0;background:transparent;font-family:var(--sans);text-align:left;
+  display:flex;align-items:center;gap:10px;width:100%;
+  padding:9px 20px 9px 22px;cursor:pointer;position:relative;color:var(--ink-2);
+  font-size:14px;line-height:1.5;transition:background .15s;
+}
+.nav-item:hover{background:rgba(39,45,42,.035)}
+.nav-item .dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto;opacity:.75}
+.nav-item .nm{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav-item .cnt{font-size:10.5px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.nav-item[aria-current="true"]{color:var(--ink);font-weight:600;background:var(--accent-soft)}
+.nav-item[aria-current="true"]::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)
+}
+.nav-item[aria-current="true"] .cnt{color:var(--accent-ink)}
+.rail-foot{margin:22px 22px 0;padding-top:16px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink-3);line-height:1.75}
+.rail-foot b{font-weight:500;color:var(--ink-2)}
+
+.main{padding:38px 44px 72px;min-width:0}
+.main-inner{max-width:1000px}
+
+/* ===== 主题头部 ===== */
+.hero{position:relative;padding-bottom:24px;border-bottom:1px solid var(--line);margin-bottom:26px}
+.hero-kicker{margin:0;font-size:11.5px;letter-spacing:.16em;color:var(--ink-3);display:flex;align-items:center;gap:8px}
+.hero-kicker i{width:14px;height:1px;background:var(--accent);display:inline-block}
+.hero h1{
+  font-family:var(--serif);font-weight:600;font-size:clamp(30px,4.4vw,46px);
+  line-height:1.18;letter-spacing:.01em;margin:8px 0 0;color:var(--ink);
+}
+.title-rule{display:block;margin:12px 0 0;width:150px;height:9px}
+.title-rule path{stroke:var(--accent);stroke-width:2;fill:none;stroke-linecap:round}
+.hero-desc{margin:14px 0 0;max-width:38em;color:var(--ink-2);font-size:15px}
+.hero-meta{display:flex;flex-wrap:wrap;gap:0 18px;margin-top:16px;font-size:12px;color:var(--ink-3)}
+.hero-meta span{display:inline-flex;align-items:center;gap:6px}
+.hero-meta b{font-weight:600;color:var(--ink);font-size:12.5px;font-variant-numeric:tabular-nums}
+.hero-glyph{
+  position:absolute;right:-4px;top:-26px;font-family:var(--serif);font-weight:700;
+  font-size:clamp(96px,13vw,176px);line-height:.9;color:var(--accent);opacity:.13;
+  pointer-events:none;user-select:none;z-index:0;
+}
+.hero-kicker,.hero h1,.hero-desc,.hero-meta{position:relative;z-index:1}
+
+/* ===== 四板块 ===== */
+.sections{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+.panel{
+  background:var(--accent-tint);border:1px solid var(--line);
+  border-radius:7px;display:flex;flex-direction:column;min-width:0;
+  border-top:2px solid var(--accent);
+}
+.panel-head{padding:15px 18px 12px;display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start}
+.panel-icon{
+  width:26px;height:26px;border-radius:50%;background:var(--accent-soft);
+  display:grid;place-items:center;margin-top:2px;
+}
+.panel-icon svg{width:15px;height:15px;stroke:var(--accent-ink);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.panel-title{font-family:var(--serif);font-weight:600;font-size:16.5px;line-height:1.4;margin:0;letter-spacing:.02em}
+.panel-hint{margin:3px 0 0;font-size:11.5px;line-height:1.65;color:var(--ink-3)}
+.panel-count{font-size:10.5px;color:var(--ink-3);font-variant-numeric:tabular-nums;padding-top:5px}
+.items{list-style:none;margin:0;padding:0 8px}
+.item{
+  display:grid;grid-template-columns:minmax(0,1fr) 22px;gap:4px;align-items:start;
+  border-top:1px solid var(--line-soft);padding:4px 4px 4px 8px;border-radius:4px;
+}
+.item:first-child{border-top-color:transparent}
+.item-text{
+  font-size:13.8px;line-height:1.72;color:var(--ink);padding:5px 2px;min-height:1.9em;
+  border-radius:4px;outline:none;word-break:break-word;white-space:pre-wrap;
+  transition:background .15s;
+}
+.item-text:hover{background:rgba(255,255,255,.7)}
+.item-text:focus{background:#fff;box-shadow:inset 0 0 0 1px var(--accent)}
+.item-text[data-empty="1"]::before{
+  content:attr(data-ph);color:var(--ink-3);opacity:.8;pointer-events:none;
+}
+.del-btn{
+  width:22px;height:22px;margin-top:4px;border:0;background:transparent;color:var(--ink-3);
+  cursor:pointer;border-radius:50%;font-size:15px;line-height:1;display:grid;place-items:center;
+  opacity:0;transition:opacity .15s,color .15s,background .15s;
+}
+.item:hover .del-btn,.item:focus-within .del-btn{opacity:.85}
+.del-btn:hover{color:#B5473A;background:rgba(181,71,58,.1)}
+.add-row{padding:6px 12px 12px}
+.add-btn{
+  appearance:none;border:0;background:transparent;font-family:var(--sans);
+  font-size:12.5px;color:var(--ink-3);cursor:pointer;padding:6px 6px;border-radius:5px;
+  display:inline-flex;align-items:center;gap:6px;transition:.15s;
+}
+.add-btn:hover{color:var(--accent-ink);background:rgba(255,255,255,.6)}
+.add-btn svg{width:12px;height:12px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round}
+.empty-note{
+  padding:20px 10px 18px;font-size:12.5px;color:var(--ink-3);line-height:1.7;
+  text-align:center;
+}
+
+/* ===== 四阶段 ===== */
+.stages{margin-top:44px;padding-top:30px;border-top:1px solid var(--line)}
+.stages-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:22px;flex-wrap:wrap}
+.stages-head h2{font-family:var(--serif);font-weight:600;font-size:22px;margin:0;letter-spacing:.03em;line-height:1.3}
+.stages-head p{margin:5px 0 0;font-size:12.5px;color:var(--ink-3);max-width:36em;line-height:1.7}
+.stages-total{
+  font-size:11.5px;color:var(--accent-ink);background:var(--accent-soft);
+  padding:4px 11px;border-radius:20px;white-space:nowrap;letter-spacing:.04em;
+}
+.stage-flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.stage{
+  position:relative;border-top:1px solid var(--line);padding-top:18px;padding-bottom:6px;
+  background:var(--stage-tint);border-radius:0 0 7px 7px;display:flex;flex-direction:column;min-width:0;
+}
+.stage-dot{
+  position:absolute;top:-5px;left:0;width:9px;height:9px;border-radius:50%;
+  background:var(--accent);box-shadow:0 0 0 3px var(--paper);
+}
+.stage-no{font-size:10.5px;letter-spacing:.16em;color:var(--accent-ink);margin:0 0 2px;font-variant-numeric:tabular-nums;padding:0 14px}
+.stage-name{font-family:var(--serif);font-size:17.5px;font-weight:600;margin:0;padding:0 14px;display:flex;align-items:baseline;gap:7px}
+.stage-name small{font-family:var(--sans);font-size:10.5px;color:var(--ink-3);font-weight:400;letter-spacing:.03em}
+.stage-hint{margin:5px 0 10px;padding:0 14px;font-size:11.5px;line-height:1.65;color:var(--ink-3)}
+.stage .items{padding:0 6px}
+.stage .item-text{font-size:13px;line-height:1.7}
+.stage .add-row{padding:4px 6px 10px}
+
+.main-foot{margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink-3);line-height:1.9;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+
+.toast{
+  position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);
+  background:#272D2A;color:#F7F5F0;font-size:12.5px;padding:9px 16px;border-radius:6px;
+  opacity:0;pointer-events:none;transition:.24s;z-index:60;max-width:80vw;
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ===== 响应式 ===== */
+@media (max-width:1040px){
+  .main{padding:30px 26px 60px}
+  .sections{grid-template-columns:1fr}
+  .stage-flow{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 14px}
+}
+@media (max-width:780px){
+  .topbar-inner{height:auto;padding:11px 16px;flex-wrap:wrap;gap:10px}
+  .brand-sub{display:none}
+  .topbar-actions .save-state{display:none}
+  .layout{grid-template-columns:1fr}
+  .rail{
+    position:sticky;top:58px;z-index:5;height:auto;border-right:0;border-bottom:1px solid var(--line);
+    padding:8px 8px;overflow:visible;background:var(--paper);min-width:0;
+  }
+  .rail-label,.rail-foot{display:none}
+  .theme-nav{flex-direction:row;overflow-x:auto;gap:6px;padding-bottom:2px;-webkit-overflow-scrolling:touch;min-width:0;width:100%}
+  .nav-item{width:auto;flex:0 0 auto;padding:7px 12px;border-radius:20px;font-size:12.5px;border:1px solid var(--line)}
+  .nav-item[aria-current="true"]{background:var(--accent-soft);border-color:var(--accent);font-weight:600}
+  .nav-item[aria-current="true"]::before{display:none}
+  .nav-item .cnt{display:none}
+  .main{padding:22px 16px 56px}
+  .hero-glyph{font-size:88px;top:-10px}
+  .stage-flow{grid-template-columns:1fr}
+  .hero-meta{gap:0 14px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition-duration:.01ms!important;animation-duration:.01ms!important}
+}
+@media print{
+  @page{margin:14mm}
+  .topbar,.rail,.add-btn,.del-btn,.toast,.main-foot{display:none!important}
+  body{background:#fff;font-size:12px}
+  body::before{display:none}
+  .layout{display:block;max-width:none}
+  .main{padding:0}
+  .main-inner{max-width:none}
+  .sections{grid-template-columns:1fr 1fr}
+  .stage-flow{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .panel,.stage{break-inside:avoid}
+  .hero-glyph{display:none}
+  .item .del-btn{display:none}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32"><path d="M6 12c6-2 8 3 13 2s6-4 7-3" stroke="#EE8E79" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M6 19c6-2 8 3 13 2s6-4 7-3" stroke="#7FBCA8" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M6 26c6-2 8 3 13 2s6-4 7-3" stroke="#C9A46A" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+      </span>
+      <div>
+        <p class="brand-name">心理课堂备课工作台</p>
+        <p class="brand-sub">九大主题 · 四阶段流程 · 学期备课</p>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <span class="save-state" id="saveState"><span class="save-dot"></span><span id="saveText">已保存到本机</span></span>
+      <button class="btn" id="printBtn" type="button">打印</button>
+      <button class="btn" id="exportBtn" type="button">导出备课稿</button>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="rail">
+    <p class="rail-label">主题目录</p>
+    <nav class="theme-nav" id="themeNav" aria-label="主题切换"></nav>
+    <div class="rail-foot">
+      <b>小提示</b><br>
+      内容自动保存在当前浏览器，换电脑或清缓存前，先导出备课稿留一份。
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="main-inner">
+      <section class="hero">
+        <p class="hero-kicker"><i></i><span id="heroKicker">主题一</span></p>
+        <h1 id="themeTitle">情绪管理</h1>
+        <svg class="title-rule" viewBox="0 0 150 9" aria-hidden="true"><path d="M1 6c18-4 30 4 48 0s30 4 48 0 30-4 52-2"/></svg>
+        <p class="hero-desc" id="themeDesc"></p>
+        <div class="hero-meta" id="heroMeta"></div>
+        <div class="hero-glyph" id="heroGlyph" aria-hidden="true">情</div>
+      </section>
+
+      <section class="sections" id="sectionsGrid" aria-label="主题四个板块"></section>
+
+      <section class="stages">
+        <div class="stages-head">
+          <div>
+            <h2>课堂四阶段</h2>
+            <p>热身降低防御，转换引出问题，工作完成练习，结束收束迁移。每格都可增删条目。</p>
+          </div>
+          <span class="stages-total" id="stageTotal">合计 40 分钟</span>
+        </div>
+        <div class="stage-flow" id="stageFlow"></div>
+      </section>
+
+      <footer class="main-foot">
+        <span>内容可逐条点击修改，回车新增一条；本工作台为备课草稿工具，示例内容可自行替换。</span>
+        <span id="footStat"></span>
+      </footer>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const THEMES = [
+  {
+    id:'emotion', name:'情绪管理', glyph:'情', color:'#EE8E79',
+    desc:'把“说不清的烦”拆成可以命名、可以安放的感受，先练习识别，再练习调节。',
+    sections:{
+      topic:[
+        '我的情绪温度计：给情绪命名，并标出 0–10 的强度',
+        '愤怒的暂停键：识别身体预警信号，练一次六秒暂停',
+        '压力下的自我安抚：腹式呼吸与五指呼吸的课堂版',
+        '情绪的出口：向谁说、怎么说、说到什么程度'
+      ],
+      analysis:[
+        '初一学生情绪起伏大，词汇却集中在“烦、累、无聊”，说不清就不容易被帮到。',
+        '习惯把情绪归为“不成熟”，倾向压抑；同伴在场时更不愿暴露脆弱。',
+        '学业与人际压力叠加，考前、被比较、被误解是三个高频触发点。',
+        '需要低风险表达通道：用第三人称、写匿名卡、给情境而不是讲自己的事。'
+      ],
+      theory:[
+        '情绪 ABC（Ellis）：把“事件—想法—情绪”拆开，让改变落在可以练的想法上。',
+        '情绪粒度（Barrett）：先扩充情绪词汇，调节才有抓手。',
+        '体验式学习（Kolb）：先做体验，再给概念，最后回到生活里迁移。',
+        '正念简化练习（Kabat-Zinn）：呼吸锚点与身体扫描的三十秒版本。'
+      ],
+      goal:[
+        '知识：能说出 ABC 三要素，并识别至少四种情绪对应的身体信号。',
+        '技能：用“事件—想法—情绪”句式复述一次真实经历，掌握两种课堂可用的放松方法。',
+        '情感：承认情绪有功能，降低“有情绪就是不懂事”的羞耻感，愿意主动求助。'
+      ]
+    },
+    stages:{
+      warm:[
+        '情绪天气预报：进门用手势或颜色卡报一个此刻的状态',
+        '约定边界：不追问别人的故事，只说自己愿意说的'
+      ],
+      bridge:[
+        '“烦”到底是什么：把五个模糊词拆成具体情绪名',
+        '情绪温度计：给最近一周的三个时刻标强度与身体信号'
+      ],
+      work:[
+        '情境演练：被误解、被比较、考前崩三个片段，各走一次 ABC',
+        '两人小组互练“事件—想法—情绪”句式，教师巡场给具体反馈'
+      ],
+      close:[
+        '带走一句话：这周我要试的一个调节动作',
+        '出口清单：写下我愿意求助的两个人'
+      ]
+    }
+  },
+  {
+    id:'social', name:'人际交往', glyph:'交', color:'#DFAE55',
+    desc:'练习说第一句话、练习说“不”，也练习在冲突之后把关系修回来。',
+    sections:{
+      topic:[
+        '第一句话的勇气：三句自我介绍与一个破冰提问',
+        '拒绝也可以很温柔：“我—信息”与非暴力沟通四步',
+        '冲突降温三步：先停、再说感受、最后提请求',
+        '朋友圈里的我：线上社交的分寸与截图之外的关系'
+      ],
+      analysis:[
+        '同伴关系成为核心，小团体与“被落下”的焦虑突出。',
+        '线上表达熟练、线下开口紧张；表情包替代语言，面对面容易词穷。',
+        '担心拒绝会毁掉关系，常用讨好或冷处理，事后又后悔。',
+        '部分学生有被起绰号、被排挤的经历，活动中不强制分享。'
+      ],
+      theory:[
+        '社会技能训练（SST）：示范—演练—反馈—迁移，四步缺一不可。',
+        '非暴力沟通（Rosenberg）：观察、感受、需要、请求。',
+        '社会学习理论（Bandura）：同伴示范与正向强化比说教有效。',
+        '团体动力学：小组 4–6 人、轮次发言，保护低表达者。'
+      ],
+      goal:[
+        '知识：说出健康关系的三个特征，复述“我—信息”的结构。',
+        '技能：在情境演练中完成一次请求、一次拒绝、一次冲突降温。',
+        '情感：相信关系可以修复，降低对冲突的灾难化预期。'
+      ]
+    },
+    stages:{
+      warm:[
+        '两人一问一答：说一件这周让我开心的小事',
+        '小组公约：不评价、不打断、可以跳过'
+      ],
+      bridge:[
+        '猜一猜：同一句话的三种说法，听感差在哪里',
+        '把“你怎么这样”改成“我感觉……我希望……”'
+      ],
+      work:[
+        '三人情境演练：借东西被拒、被起绰号、群里被 @ 指责',
+        '观察员用反馈卡记录：停住了没有、说感受没有、提请求没有'
+      ],
+      close:[
+        '一句话承诺：这周我要对谁说出一次真实的请求',
+        '把冲突后的修复句式抄在书页角落'
+      ]
+    }
+  },
+  {
+    id:'self', name:'认识自我', glyph:'我', color:'#8CA8DB',
+    desc:'从单一标签里走出来，看见自己是一个多面、并且仍在变化的人。',
+    sections:{
+      topic:[
+        '我的多面体：成绩之外我还拥有哪些面',
+        '优点放大镜：把“还行”换成具体的证据',
+        '别人眼中的我：反馈卡片与镜像自我',
+        '我的成长档案：和三个月前的自己比一比'
+      ],
+      analysis:[
+        '自我意识快速发展，容易用成绩、外貌或受欢迎程度单一定义自己。',
+        '自我评价两极化：公开自夸尴尬，自我贬低反而显得“安全”。',
+        '比较心理强，上行比较容易带来持续的不如人感。',
+        '空泛的鼓励无效，需要具体、可验证的自我认识路径。'
+      ],
+      theory:[
+        '多维自我概念（Shavelson）：学业、社交、身体、情绪各有独立评价。',
+        '镜像自我（Cooley）：重要他人的反馈如何被内化成自我看法。',
+        '社会比较理论（Festinger）：把上行比较换成纵向的自我比较。',
+        '叙事身份：用“故事”描述自己，替代“我就是一个……”的标签。'
+      ],
+      goal:[
+        '知识：识别自我概念的多个维度，区分“我做错了事”与“我是失败的人”。',
+        '技能：完成一份多维自我画像，把一次挫败改写成“情境＋行为＋可改进点”。',
+        '情感：提升自我接纳，减少用单一成绩定义自己的倾向。'
+      ]
+    },
+    stages:{
+      warm:[
+        '三个标签：写在便签上，贴到“最像我”的那一栏',
+        '全场看看：哪一栏的标签最多，说明了什么'
+      ],
+      bridge:[
+        '单一标签的代价：如果只能留一个标签，会失去什么',
+        '引入多维视角：同一个人在不同情境里的样子'
+      ],
+      work:[
+        '多维自画像：学业、朋友、身体、爱好、情绪五格各写一条证据',
+        '同伴互看：只核对证据，不评价好坏'
+      ],
+      close:[
+        '把“我不擅长”改写成“我在……上还没找到方法”',
+        '挑一条被忽略的优势，写下这周可以用在哪'
+      ]
+    }
+  },
+  {
+    id:'adapt', name:'环境适应', glyph:'适', color:'#7FBCA8',
+    desc:'把“我不适应”拆成可控与不可控，再去找身边真的可以用的资源。',
+    sections:{
+      topic:[
+        '新班级生存指南：认识三个人、记住三条规则',
+        '规则与人情：校规背后在保护什么',
+        '我的学习空间：书桌、手机与睡眠的位置安排',
+        '变化来了怎么办：分班、转学与家庭变动'
+      ],
+      analysis:[
+        '小升初后作息、科目、评价方式全变，出现“跟不上、不被认识”的失落。',
+        '寄宿生面临生活自理与想家；部分学生经历转学或父母外出务工。',
+        '适应困难常以身体不适、拖延、逃避上学出现，容易被误读为懒。',
+        '需要把模糊的“不适应”拆成一个个具体、可解决的小问题。'
+      ],
+      theory:[
+        '压力—应对模型（Lazarus）：先评价威胁，再调用资源。',
+        '生态系统视角（Bronfenbrenner）：个人、班级、家庭、社区四层找资源。',
+        '心理韧性保护因子：至少一个稳定的成人关系、一项能胜任的体验。',
+        '可控性分类：清单分成“我能改”与“我改不了”，精力只投前者。'
+      ],
+      goal:[
+        '知识：说出适应的四个资源层面，区分可控与不可控因素。',
+        '技能：列一份个人适应资源清单，并写出三条本周可执行的小行动。',
+        '情感：把适应看作过程而不是能力评判，减少“我不行”的归因。'
+      ]
+    },
+    stages:{
+      warm:[
+        '入学以来最难的一件事，写关键词投进盒子，不署名',
+        '读出几条，全班用手势表示“我也经历过”'
+      ],
+      bridge:[
+        '可控与不可控：把关键词分成两栏',
+        '看两栏比例：我们把力气花在了哪里'
+      ],
+      work:[
+        '资源地图：画出班里、家里、学校里各一个能帮我的人或地方',
+        '小组补充：别人的地图上，有哪些我没想到的资源'
+      ],
+      close:[
+        '本周三小步：今天能做、这周能做、找人一起做各一件',
+        '记下学校心理老师的办公室位置与预约方式'
+      ]
+    }
+  },
+  {
+    id:'learn', name:'学会学习', glyph:'学', color:'#A78BD1',
+    desc:'用可以验证的方法替换“再努力一点”，让策略感代替天赋论。',
+    sections:{
+      topic:[
+        '专注力开关：二十五分钟一段，手机离桌',
+        '记忆不是死磕：提取练习与间隔复习',
+        '错题的价值：两列错题卡怎么用',
+        '拖延的最小启动：先做两分钟'
+      ],
+      analysis:[
+        '学习任务量陡增，方法仍停留在多看多抄，投入与产出不成比例。',
+        '注意力被短视频切碎，进入状态慢，常常“准备了很久还没开始”。',
+        '把成绩归因于天赋，遇挫易放弃；“努力无效”的体验格外刺人。',
+        '考前突击、熬夜普遍，需要马上能验证的小方法建立信心。'
+      ],
+      theory:[
+        '认知负荷理论（Sweller）：先降低无关负荷，再谈努力。',
+        '提取练习与间隔效应（Roediger & Karpicke）：自测优于重读。',
+        '元认知监控：计划—执行—反思三步，让策略可以调整。',
+        '自我决定理论（Ryan & Deci）：自主、胜任、关系是持续动机来源。'
+      ],
+      goal:[
+        '知识：说明“重复阅读”与“自我测验”在记忆保持上的差异。',
+        '技能：做一张两列错题卡，并用间隔表安排三次复习。',
+        '情感：把学习效果归因于可调整的策略，提升策略性信心。'
+      ]
+    },
+    stages:{
+      warm:[
+        '两分钟记忆挑战：同一段材料，重读一遍 vs 自测一遍',
+        '报出各自记得多少，先不解释原因'
+      ],
+      bridge:[
+        '为什么“看懂了”不等于“记住了”：提取与间隔',
+        '回到挑战结果，找出差距的来源'
+      ],
+      work:[
+        '做一张两列错题卡：错在哪一步 / 下次怎么做',
+        '给三道题安排三次复习时间，写进日程'
+      ],
+      close:[
+        '选一个明天就用的方法，写清在哪个时间段用',
+        '同伴互查：方法是否具体到时间与地点'
+      ]
+    }
+  },
+  {
+    id:'life', name:'生命教育', glyph:'生', color:'#DB8FA6',
+    desc:'在安全的边界里谈生死、身体与意义，把敬畏落到具体的珍惜上。',
+    sections:{
+      topic:[
+        '生命的长度与宽度：生命线绘制',
+        '身体是我家：身体尊重与个人界限',
+        '失去与告别：宠物、亲人、旧关系的告别仪式',
+        '为谁而活：一件值得反复做的事'
+      ],
+      analysis:[
+        '对死亡好奇又恐惧，信息多来自影视与网络，误解不少。',
+        '部分学生有宠物离世、亲人病故或同伴意外的真实经历。',
+        '话题可能触发创伤反应，必须提前声明安全边界与求助通道。',
+        '青春期对身体形象敏感，外貌评价容易造成持续伤害。'
+      ],
+      theory:[
+        '生命意义感研究（Steger）：意义来自“理解”与“目的”两条线。',
+        '哀伤双过程模型（Stroebe & Schut）：丧失与重建交替进行。',
+        '存在主义视角（Frankl）：在无法改变的处境中寻找可承担的意义。',
+        '安全原则：不谈具体方式与细节，出现自伤自杀线索按危机干预流程转介。'
+      ],
+      goal:[
+        '知识：理解生命的多维价值与哀伤的常见反应。',
+        '技能：用生命线梳理重要事件，标出自己的三个支持资源。',
+        '情感：形成对生命的敬畏与对身体的尊重，明确危机时向谁求助。'
+      ]
+    },
+    stages:{
+      warm:[
+        '一件让我觉得“活着挺好”的小事，用一个物件或画面代表',
+        '自愿分享，不解释原因也可以'
+      ],
+      bridge:[
+        '生命线：标出三个转折点，看看谁在那些时刻出现过',
+        '把“长度”和“宽度”画在同一张纸上'
+      ],
+      work:[
+        '告别仪式设计：给一段已经结束的关系写一封不寄出的信',
+        '身体界限练习：哪些触碰可以、哪些必须经过我同意'
+      ],
+      close:[
+        '三个支持资源写在卡片上，放进笔袋',
+        '说清求助路径：班主任、心理老师、热线电话'
+      ]
+    }
+  },
+  {
+    id:'career', name:'生涯规划', glyph:'涯', color:'#6FA3C4',
+    desc:'把遥远的“以后做什么”，缩成这一周就可以试探的一小步。',
+    sections:{
+      topic:[
+        '兴趣不是标签：喜欢什么、为什么喜欢',
+        '职业万花筒：打破“只有几种好工作”的想象',
+        '我的能力盘点：可迁移能力与证据',
+        '十年后的一个普通周一：把职业还原成一天'
+      ],
+      analysis:[
+        '职业想象集中在少数热门与网络流行职业，受家庭期待影响大。',
+        '“成绩不好就没有未来”的窄化认知普遍，容易提前自我放弃。',
+        '县域学生接触职业信息的渠道有限，缺少可参照的真实样本。',
+        '遥远规划难以驱动当下，需要转成这一周能做的小步。'
+      ],
+      theory:[
+        '生涯建构理论（Savickas）：关注、控制、好奇、信心四项适应力。',
+        '霍兰德 RIASEC：作为探索工具扩展选项，而不是用来定型。',
+        '计划性偶发事件理论（Krumboltz）：教学生把偶然变成机会。',
+        '执行意图（if–then）：把意图写成触发条件加具体动作。'
+      ],
+      goal:[
+        '知识：说出三类职业信息渠道，理解兴趣、能力与价值观的区别。',
+        '技能：完成一份兴趣—能力—价值观初稿，并写出一条“如果—就”行动。',
+        '情感：对未来保有好奇而不是恐慌，接受路径可以调整。'
+      ]
+    },
+    stages:{
+      warm:[
+        '小时候想做什么：写下并说说当时为什么',
+        '全班扫一遍，看看哪些职业消失、哪些还在'
+      ],
+      bridge:[
+        '职业的一天：把“医生”还原成从早到晚的十二个小时',
+        '引入问题：我喜欢的是那个光鲜的名字，还是那天里的具体事'
+      ],
+      work:[
+        '兴趣—能力—价值观三列盘点，圈出交集',
+        '采访式提问：向同伴追问三条具体证据'
+      ],
+      close:[
+        '写一条“如果—就”：如果这周有两小时空闲，我就去……',
+        '记下一条想去了解的职业信息渠道'
+      ]
+    }
+  },
+  {
+    id:'will', name:'意志品质', glyph:'志', color:'#C89762',
+    desc:'不靠硬扛，靠具体的小承诺与环境设计，把坚持变成可操作的。',
+    sections:{
+      topic:[
+        '坚持的节奏：把大目标切成一周',
+        '失败复盘会：不问“为什么我不行”，问“哪一步卡住了”',
+        '给自己一个能完成的承诺：公开见证与打卡',
+        '放弃也是一种判断：什么时候该停'
+      ],
+      analysis:[
+        '三分钟热度普遍，计划常定得过大，第一周就崩。',
+        '把“没坚持”当成品格缺陷，形成自责—放弃的循环。',
+        '游戏与短视频提供即时反馈，与需要延迟回报的学习直接竞争。',
+        '需要看得见的进步证据和外部见证，单靠自我要求撑不住。'
+      ],
+      theory:[
+        '执行意图（Gollwitzer）：把“我要坚持”改成“当 X 发生，我就做 Y”。',
+        '成长型思维（Dweck）：能力可以发展，反馈指向过程。',
+        '目标设定理论（Locke & Latham）：具体、可测、适度挑战。',
+        '习惯环与环境设计：提示可见、行为够小、奖励即时。'
+      ],
+      goal:[
+        '知识：说明“目标过大—挫败—放弃”循环的机制。',
+        '技能：把模糊目标改写成具体、可测、一周内能完成的小承诺。',
+        '情感：把坚持理解为方法与情境设计，而不是道德评判。'
+      ]
+    },
+    stages:{
+      warm:[
+        '一次坚持到底的小事，和一次中途放弃的小事，各说一句',
+        '统计班里“放弃发生在第几天”'
+      ],
+      bridge:[
+        '目标体检：把“我要好好学习”放到具体、可测、有期限的尺子上',
+        '找出最容易崩的那一类目标'
+      ],
+      work:[
+        '改写承诺：切成一周内能完成的最小版本',
+        '找同伴做见证人，约定一次检查时间'
+      ],
+      close:[
+        '设置提示：把承诺写在每天一定会看到的地方',
+        '写下“崩了之后怎么办”的第一步'
+      ]
+    }
+  },
+  {
+    id:'other', name:'其他主题', glyph:'其', color:'#A3AE8E',
+    desc:'备用主题位。挫折教育、网络素养、亲子沟通、考试焦虑等，都可以放进这里。',
+    sections:{ topic:[], analysis:[], theory:[], goal:[] },
+    stages:{ warm:[], bridge:[], work:[], close:[] }
+  }
+];
+const CN_NUM = ['一','二','三','四','五','六','七','八','九'];
+const STORE_KEY = 'psy-lesson-workbench-v1';
+
+const SEC_DEFS = [
+  {
+    key:'topic', name:'切题小主题',
+    hint:'这节课从哪个具体切口进入？一个小主题控制在 15–20 分钟能走完。',
+    icon:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v4M12 16.5v4M3.5 12h4M16.5 12h4"/></svg>'
+  },
+  {
+    key:'analysis', name:'学情分析',
+    hint:'学生真实的起点：认知水平、情绪反应、已有经验，以及需要避开的风险点。',
+    icon:'<svg viewBox="0 0 24 24"><circle cx="8.5" cy="8" r="3"/><path d="M2.5 19c0-3.1 2.7-5.6 6-5.6s6 2.5 6 5.6"/><path d="M16 5.6a3 3 0 0 1 0 5.6"/><path d="M17 13.6c2.6.6 4.5 2.7 4.5 5.4"/></svg>'
+  },
+  {
+    key:'theory', name:'设计理念及理论',
+    hint:'每个活动背后的心理学依据，写清“为什么这样设计”，而不是只写活动名。',
+    icon:'<svg viewBox="0 0 24 24"><path d="M12 6.2c-2-1.6-4.4-1.8-6.5-1.2v13c2.1-.6 4.5-.4 6.5 1.2"/><path d="M12 6.2c2-1.6 4.4-1.8 6.5-1.2v13c-2.1-.6-4.5-.4-6.5 1.2"/><path d="M12 6.2v13"/></svg>'
+  },
+  {
+    key:'goal', name:'教学目标',
+    hint:'知识、技能、情感三条线各一句，写可观察、可评价的行为，不写“懂得感恩”。',
+    icon:'<svg viewBox="0 0 24 24"><path d="M6 21V3.5"/><path d="M6 4.2c3.6-1.6 7 1.6 11.5.2v7.8c-4.5 1.4-7.9-1.8-11.5-.2"/></svg>'
+  }
+];
+
+const STAGE_DEFS = [
+  { key:'warm',   name:'热身', min:5,  hint:'降低防御、建立安全感，全班都能参与，不揭短。' },
+  { key:'bridge', name:'转换', min:8,  hint:'从体验过渡到主题，引出这节课真正要谈的问题。' },
+  { key:'work',   name:'工作', min:20, hint:'主体活动：练习、讨论、演练，配即时反馈。' },
+  { key:'close',  name:'结束', min:7,  hint:'收束与固化：带走什么，明天怎么用。' }
+];
+
+/* ---------- 工具函数 ---------- */
+const WHITE = [255,253,247];
+const INK   = [39,45,42];
+const hex2rgb = h => { h = h.replace('#',''); return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)]; };
+const mix = (a,b,t) => a.map((v,i)=>Math.round(v*(1-t)+b[i]*t));
+const rgb = c => `rgb(${c[0]},${c[1]},${c[2]})`;
+const tint = (hex,whiteRatio) => rgb(mix(hex2rgb(hex), WHITE, whiteRatio));
+const deep = (hex,t) => rgb(mix(hex2rgb(hex), INK, t));
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const nonEmpty = arr => arr.filter(x => String(x).trim()).length;
+const filledOf = t => ['topic','analysis','theory','goal'].reduce((n,k)=>n+nonEmpty(t.sections[k]),0)
+                    + ['warm','bridge','work','close'].reduce((n,k)=>n+nonEmpty(t.stages[k]),0);
+const totalOf = t => ['topic','analysis','theory','goal'].reduce((n,k)=>n+t.sections[k].length,0)
+                   + ['warm','bridge','work','close'].reduce((n,k)=>n+t.stages[k].length,0);
+
+/* ---------- 状态 ---------- */
+const clone = o => JSON.parse(JSON.stringify(o));
+let state, current = 0, saveTimer = null;
+
+function seed(){ return clone(THEMES); }
+function load(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      if(Array.isArray(parsed) && parsed.length === THEMES.length && parsed.every(t=>t.sections && t.stages)){
+        return parsed;
+      }
+    }
+  }catch(e){ /* 损坏则回到示例 */ }
+  return seed();
+}
+
+/* ---------- 渲染 ---------- */
+const $ = sel => document.querySelector(sel);
+const saveStateEl = $('#saveState'), saveTextEl = $('#saveText');
+
+function applyAccent(hex){
+  const root = document.documentElement.style;
+  root.setProperty('--accent', hex);
+  root.setProperty('--accent-tint', tint(hex,.935));
+  root.setProperty('--accent-soft', tint(hex,.79));
+  root.setProperty('--accent-ink', deep(hex,.44));
+  root.setProperty('--stage-tint', tint(hex,.94));
+}
+
+function renderNav(){
+  $('#themeNav').innerHTML = state.map((t,i)=>`
+    <button class="nav-item" type="button" data-theme="${i}" aria-current="${i===current?'true':'false'}">
+      <span class="dot" style="background:${t.color}"></span>
+      <span class="nm">${esc(t.name)}</span>
+      <span class="cnt">${filledOf(t)}</span>
+    </button>`).join('');
+}
+
+function renderHero(){
+  const t = state[current];
+  $('#heroKicker').textContent = `主题${CN_NUM[current]}｜共九`;
+  $('#themeTitle').textContent = t.name;
+  $('#themeDesc').textContent = t.desc;
+  const g = $('#heroGlyph');
+  g.textContent = t.glyph;
+  g.style.color = t.color;
+  updateBadges();
+}
+
+function updateBadges(){
+  const t = state[current];
+  const topic = nonEmpty(t.sections.topic);
+  const goal = nonEmpty(t.sections.goal);
+  const stage = ['warm','bridge','work','close'].reduce((n,k)=>n+nonEmpty(t.stages[k]),0);
+  $('#heroMeta').innerHTML = `
+    <span><b>${topic}</b> 个小主题</span>
+    <span><b>${goal}</b> 条教学目标</span>
+    <span><b>${stage}</b> 项阶段活动</span>
+    <span>合计 <b>${filledOf(t)}</b> 条内容</span>`;
+  const all = state.reduce((n,x)=>n+totalOf(x),0);
+  const filled = state.reduce((n,x)=>n+filledOf(x),0);
+  $('#footStat').textContent = `九个主题共 ${all} 条内容 · 待补 ${all - filled} 条`;
+  const nav = $('#themeNav');
+  nav.querySelectorAll('.nav-item').forEach((el,i)=>{
+    const cnt = el.querySelector('.cnt');
+    if(cnt) cnt.textContent = filledOf(state[i]);
+  });
+}
+
+function itemRow(kind, key, i, text){
+  const empty = !String(text).trim();
+  return `<li class="item">
+    <div class="item-text" contenteditable="true" spellcheck="false"
+         data-${kind}="${key}" data-i="${i}" data-ph="写一条具体的内容…"
+         data-empty="${empty?1:0}">${esc(text)}</div>
+    <button class="del-btn" type="button" data-del="${kind}" data-key="${key}" data-i="${i}"
+            title="删除这一条" aria-label="删除这一条">×</button>
+  </li>`;
+}
+
+function panelHTML(sec){
+  const t = state[current];
+  const items = t.sections[sec.key];
+  return `<section class="panel" data-panel="${sec.key}">
+    <div class="panel-head">
+      <span class="panel-icon">${sec.icon}</span>
+      <div>
+        <h2 class="panel-title">${sec.name}</h2>
+        <p class="panel-hint">${sec.hint}</p>
+      </div>
+      <span class="panel-count">${items.length} 条</span>
+    </div>
+    <ul class="items">${items.map((x,i)=>itemRow('sec',sec.key,i,x)).join('')}</ul>
+    ${items.length ? '' : '<p class="empty-note">这一格还空着，写下第一条。</p>'}
+    <div class="add-row">
+      <button class="add-btn" type="button" data-add="sec" data-key="${sec.key}">
+        <svg viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg>添加一条
+      </button>
+    </div>
+  </section>`;
+}
+
+function stageHTML(st, idx){
+  const t = state[current];
+  const items = t.stages[st.key];
+  const wr = [.945,.90,.865,.925][idx];
+  return `<div class="stage" data-stage="${st.key}" style="--stage-tint:${tint(t.color,wr)}">
+    <span class="stage-dot"></span>
+    <p class="stage-no">${String(idx+1).padStart(2,'0')}</p>
+    <h3 class="stage-name">${st.name}<small>${st.min} 分钟</small></h3>
+    <p class="stage-hint">${st.hint}</p>
+    <ul class="items">${items.map((x,i)=>itemRow('stg',st.key,i,x)).join('')}</ul>
+    ${items.length ? '' : '<p class="empty-note">还没有安排，先放一个能做到的小活动。</p>'}
+    <div class="add-row">
+      <button class="add-btn" type="button" data-add="stg" data-key="${st.key}">
+        <svg viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg>添加子项目
+      </button>
+    </div>
+  </div>`;
+}
+
+function renderSections(){
+  $('#sectionsGrid').innerHTML = SEC_DEFS.map(panelHTML).join('');
+}
+function renderStages(){
+  $('#stageFlow').innerHTML = STAGE_DEFS.map((s,i)=>stageHTML(s,i)).join('');
+  const mins = STAGE_DEFS.reduce((n,s)=>n+s.min,0);
+  $('#stageTotal').textContent = `合计 ${mins} 分钟`;
+}
+
+function renderAll(){
+  applyAccent(state[current].color);
+  renderNav();
+  renderHero();
+  renderSections();
+  renderStages();
+  updateBadges();
+}
+
+/* ---------- 编辑 ---------- */
+function setDirty(dirty){
+  saveStateEl.classList.toggle('is-dirty', dirty);
+  saveTextEl.textContent = dirty ? '正在保存…' : '已保存到本机';
+}
+function persistSoon(){
+  setDirty(true);
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>{
+    try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){}
+    setDirty(false);
+  }, 500);
+}
+
+function arrOf(kind, key){
+  return kind === 'sec' ? state[current].sections[key] : state[current].stages[key];
+}
+
+function refreshBlock(kind, key){
+  if(kind === 'sec'){
+    const sec = SEC_DEFS.find(s=>s.key===key);
+    const el = document.querySelector(`[data-panel="${key}"]`);
+    if(el && sec) el.outerHTML = panelHTML(sec);
+  } else {
+    const idx = STAGE_DEFS.findIndex(s=>s.key===key);
+    const el = document.querySelector(`[data-stage="${key}"]`);
+    if(el && idx > -1) el.outerHTML = stageHTML(STAGE_DEFS[idx], idx);
+  }
+}
+
+function focusItem(kind, key, i){
+  const el = document.querySelector(`.item-text[data-${kind}="${key}"][data-i="${i}"]`);
+  if(!el) return;
+  el.focus();
+  try{
+    const r = document.createRange();
+    r.selectNodeContents(el); r.collapse(false);
+    const sel = window.getSelection();
+    sel.removeAllRanges(); sel.addRange(r);
+  }catch(e){}
+}
+
+function addItem(kind, key, after){
+  const arr = arrOf(kind, key);
+  const pos = (after === undefined || after === null) ? arr.length : after + 1;
+  arr.splice(pos, 0, '');
+  persistSoon();
+  refreshBlock(kind, key);
+  updateBadges();
+  focusItem(kind, key, pos);
+}
+
+function toast(msg){
+  const el = $('#toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>el.classList.remove('show'), 1900);
+}
+
+/* ---------- 事件 ---------- */
+document.addEventListener('click', e=>{
+  const navBtn = e.target.closest('.nav-item');
+  if(navBtn){
+    current = Number(navBtn.dataset.theme);
+    renderAll();
+    window.scrollTo({top:0, behavior:'smooth'});
+    return;
+  }
+  const addBtn = e.target.closest('.add-btn');
+  if(addBtn){
+    addItem(addBtn.dataset.add, addBtn.dataset.key, null);
+    return;
+  }
+  const delBtn = e.target.closest('.del-btn');
+  if(delBtn){
+    const kind = delBtn.dataset.del, key = delBtn.dataset.key, i = Number(delBtn.dataset.i);
+    const arr = arrOf(kind, key);
+    if(arr[i] === undefined) return;
+    if(String(arr[i]).trim() && arr.length > 1 && !confirm('删除这一条？')) return;
+    arr.splice(i, 1);
+    persistSoon();
+    refreshBlock(kind, key);
+    updateBadges();
+  }
+});
+
+document.addEventListener('input', e=>{
+  const el = e.target.closest('.item-text');
+  if(!el) return;
+  const kind = el.dataset.sec !== undefined ? 'sec' : 'stg';
+  const key = el.dataset.sec !== undefined ? el.dataset.sec : el.dataset.stg;
+  const i = Number(el.dataset.i);
+  const arr = arrOf(kind, key);
+  if(arr[i] === undefined) return;
+  arr[i] = el.textContent.replace(/\u00a0/g,' ');
+  el.dataset.empty = String(el.textContent.trim() ? 0 : 1);
+  persistSoon();
+  updateBadges();
+});
+
+document.addEventListener('keydown', e=>{
+  const el = e.target.closest && e.target.closest('.item-text');
+  if(!el) return;
+  if(e.key === 'Enter' && !e.shiftKey){
+    e.preventDefault();
+    const kind = el.dataset.sec !== undefined ? 'sec' : 'stg';
+    const key = el.dataset.sec !== undefined ? el.dataset.sec : el.dataset.stg;
+    addItem(kind, key, Number(el.dataset.i));
+  }
+});
+
+document.addEventListener('paste', e=>{
+  const el = e.target.closest && e.target.closest('.item-text');
+  if(!el) return;
+  e.preventDefault();
+  const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+  document.execCommand('insertText', false, text);
+});
+
+document.addEventListener('blur', e=>{
+  const el = e.target.closest && e.target.closest('.item-text');
+  if(!el) return;
+  if(!el.textContent.trim()) el.innerHTML = '';
+}, true);
+
+/* ---------- 导出 ---------- */
+function pad(n){ return String(n).padStart(2,'0'); }
+function stamp(){
+  const d = new Date();
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+function exportMd(){
+  let md = `# 心理课堂备课工作台\n\n导出时间：${stamp()}\n`;
+  state.forEach((t,i)=>{
+    md += `\n## 主题${CN_NUM[i]}：${t.name}\n\n${t.desc}\n`;
+    SEC_DEFS.forEach(sec=>{
+      const arr = t.sections[sec.key].filter(x=>String(x).trim());
+      md += `\n### ${sec.name}\n\n${arr.length ? arr.map(x=>`- ${x}`).join('\n') : '- （待补充）'}\n`;
+    });
+    md += `\n### 课堂四阶段（共 ${STAGE_DEFS.reduce((n,s)=>n+s.min,0)} 分钟）\n`;
+    STAGE_DEFS.forEach(st=>{
+      const arr = t.stages[st.key].filter(x=>String(x).trim());
+      md += `\n#### ${st.name}（${st.min} 分钟）\n\n${arr.length ? arr.map(x=>`- ${x}`).join('\n') : '- （待补充）'}\n`;
+    });
+  });
+  const blob = new Blob([md], {type:'text/markdown;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `心理课堂备课稿-${stamp()}.md`;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 1000);
+  toast('备课稿已导出为 Markdown');
+}
+
+$('#exportBtn').addEventListener('click', exportMd);
+$('#printBtn').addEventListener('click', ()=>window.print());
+
+/* ---------- 启动 ---------- */
+state = load();
+renderAll();
+if(!localStorage.getItem(STORE_KEY)) persistSoon();
+</script>
+</body>
+</html>
+<!-- （注：内容由AI生成） -->
